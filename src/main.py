@@ -53,7 +53,7 @@ def main():
     print(f"Standard deviation: {cv_results['std']:.4f}")
 
     print("\nTraining the final predictor on all available records...")
-    predictor.fit_full()
+    predictor.train(full=True)
     print("Training complete.")
 
     print("\nLaunching interactive interface...")
