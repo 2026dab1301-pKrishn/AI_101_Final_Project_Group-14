@@ -27,36 +27,31 @@ def main():
         random_state=RANDOM_STATE,
     )
 
-    print("\nEvaluating the model on the held-out test set...")
     results = predictor.evaluate()
-
-    print(f"Test accuracy:          {results['accuracy']:.4f}")
-    print(f"Balanced accuracy:      {results['balanced_accuracy']:.4f}")
-    print(f"Precision (acquired):   {results['precision']:.4f}")
-    print(f"Recall (acquired):      {results['recall']:.4f}")
-    print(f"F1-score (acquired):    {results['f1']:.4f}")
-
-    print("\nConfusion matrix [rows=true, columns=predicted]:")
-    print(results["confusion_matrix"])
-
-    print("\nClassification report:")
-    print(results["classification_report"])
-
     baseline = predictor.baseline_accuracy()
-    print(f"Baseline accuracy:      {baseline:.4f}")
-
     cv_results = predictor.cross_validate(folds=5)
 
-    print("\n5-fold cross-validation:")
-    print("Fold scores:", cv_results["scores"])
-    print(f"Mean accuracy: {cv_results['mean']:.4f}")
-    print(f"Standard deviation: {cv_results['std']:.4f}")
+    print(f"""
+Test accuracy:          {results['accuracy']:.4f}
+Balanced accuracy:      {results['balanced_accuracy']:.4f}
+Precision (acquired):   {results['precision']:.4f}
+Recall (acquired):      {results['recall']:.4f}
+F1-score (acquired):    {results['f1']:.4f}
 
-    print("\nTraining the final predictor on all available records...")
+Confusion matrix [rows=true, columns=predicted]:
+{results['confusion_matrix']}
+
+Classification report:
+{results['classification_report']}
+
+Baseline accuracy:      {baseline:.4f}
+
+5-fold cross-validation:
+Fold scores: {cv_results['scores']}
+Mean accuracy: {cv_results['mean']:.4f}
+Standard deviation: {cv_results['std']:.4f}
+""")
     predictor.train(full=True)
-    print("Training complete.")
-
-    print("\nLaunching interactive interface...")
 
     app = StartupPredictionUI(
         predictor,
