@@ -96,11 +96,18 @@ Install the required packages:
 pip install -r requirements.txt
 ```
 
+Optional though recommended for the UI interface
+```bash
+pip install pygame
+```
+Note: The project still runs without pygame - only as a text based interface
+
 Run the project from the root directory:
 
 ```bash
 python -m src.main
 ```
+Note: Due to the model training etc, the file takes a substansive amount of time to run on some systems about 1-2 mins.
 
 ### What happens when you run it?
 
