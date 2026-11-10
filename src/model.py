@@ -1,49 +1,22 @@
 import numpy as np
-import pandas as pd
 
 from sklearn.dummy import DummyClassifier
 from sklearn.linear_model import LogisticRegression
-from sklearn.metrics import (
-    accuracy_score,
-    balanced_accuracy_score,
-    classification_report,
-    confusion_matrix,
-    f1_score,
-    precision_score,
-    recall_score,
-)
-from sklearn.model_selection import StratifiedKFold, cross_val_score, train_test_split
+from sklearn.metrics import accuracy_score, balanced_accuracy_score, classification_report, confusion_matrix, f1_score, precision_score, recall_score
+from sklearn.model_selection import  StratifiedKFold, cross_val_score, train_test_split
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import FunctionTransformer, StandardScaler
 
 
 class Model:
 
-    def __init__(
-        self,
-        data,
-        feature="funding_total_usd",
-        target="status",
-        test_size=0.20,
-        random_state=None,
-    ):
+    def __init__(self, data, feature, target, test_size=0.20, random_state=None):
+
         self.feature = feature
         self.target = target
-        self.random_state = random_state
-
-        self.data = data[[feature, target]].copy()
-        self.data[feature] = pd.to_numeric(self.data[feature], errors="coerce")
-        self.data[target] = pd.to_numeric(self.data[target], errors="coerce")
-        self.data = self.data.dropna()
-
-        if (self.data[feature] < 0).any():
-            raise ValueError("Funding cannot be negative.")
-
-        if set(self.data[target].unique()) != {0, 1}:
-            raise ValueError("Status must contain both 0 and 1.")
-
-        self.X = self.data[[feature]]
-        self.y = self.data[target]
+        data = data[[self.feature, self.target]].dropna()
+        self.X = data[[self.feature]]
+        self.y = data[self.target]
 
         self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(
             self.X,
@@ -53,42 +26,26 @@ class Model:
             stratify=self.y,
         )
 
-        self.pipeline = self.build_pipeline()
-        self.is_trained = False
-
-    @staticmethod
-    def build_pipeline():
-        return Pipeline([
+        self.pipeline = Pipeline([
             ("log", FunctionTransformer(np.log1p)),
             ("scaler", StandardScaler()),
             ("model", LogisticRegression(max_iter=1000)),
         ])
+        self.is_trained = False
+        self.random_state = random_state
 
-    def train(self):
-        self.pipeline.fit(self.X_train, self.y_train)
+    def train(self, full=False):
+        if full:
+            self.pipeline.fit(self.X, self.y)
+        else:
+            self.pipeline.fit(self.X_train, self.y_train)
         self.is_trained = True
-        return self
-
-    def fit_full(self):
-        self.pipeline.fit(self.X, self.y)
-        self.is_trained = True
-        return self
 
     def predict(self, funding):
-        if not self.is_trained:
-            raise RuntimeError("Train the model first.")
-
         return self.pipeline.predict([[funding]])
 
     def predict_proba(self, funding):
-        if not self.is_trained:
-            raise RuntimeError("Train the model first.")
-
         return self.pipeline.predict_proba([[funding]])
-
-    @property
-    def classes_(self):
-        return self.pipeline.named_steps["model"].classes_
 
     def evaluate(self):
         self.train()
@@ -97,15 +54,14 @@ class Model:
         return {
             "accuracy": accuracy_score(self.y_test, predictions),
             "balanced_accuracy": balanced_accuracy_score(self.y_test, predictions),
-            "precision": precision_score(self.y_test, predictions, zero_division=0),
-            "recall": recall_score(self.y_test, predictions, zero_division=0),
-            "f1": f1_score(self.y_test, predictions, zero_division=0),
+            "precision": precision_score(self.y_test, predictions),
+            "recall": recall_score(self.y_test, predictions),
+            "f1": f1_score(self.y_test, predictions),
             "confusion_matrix": confusion_matrix(self.y_test, predictions),
             "classification_report": classification_report(
                 self.y_test,
                 predictions,
                 target_names=["Not acquired", "Acquired"],
-                zero_division=0,
             ),
         }
 
@@ -122,8 +78,14 @@ class Model:
             random_state=self.random_state,
         )
 
+        pipeline = Pipeline([
+            ("log", FunctionTransformer(np.log1p)),
+            ("scaler", StandardScaler()),
+            ("model", LogisticRegression(max_iter=1000)),
+        ])
+
         scores = cross_val_score(
-            self.build_pipeline(),
+            pipeline,
             self.X_train,
             self.y_train,
             cv=cv,
