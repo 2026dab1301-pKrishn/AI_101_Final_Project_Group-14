@@ -166,8 +166,11 @@ Similarly, the dataset loading process was separated into `data.py`.
 This made it easier to modify individual parts without having to rewrite the entire program.
 
 ---
+## Video
 
-# 3. AI Acknowledgement
+- **Project Video:** https://drive.google.com/drive/folders/1VSpMnMoQkNZ_8YwfHrCygeJJDX2srqnF
+
+# 4. AI Acknowledgement
 
 AI tools were used during the development of this project, primarily as a learning and assistance resource.
 They helped us understand unfamiliar concepts, explore alternative approaches, identify errors and improve parts of the code. They were also useful when interpreting evaluation metrics and understanding how different components of Scikit-learn work together.
